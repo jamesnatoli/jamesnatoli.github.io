@@ -1,3 +1,5 @@
+console.log("Hello, world!");
+
 function getRandomNumber() {
   return Math.random();
 }
