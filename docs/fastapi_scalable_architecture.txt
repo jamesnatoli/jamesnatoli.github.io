@@ -1,0 +1,82 @@
+# Scalable Decoupled Architecture Guide (FastAPI Backend + GitHub Frontend)
+
+Below is the blueprint layout for your project. This text tree represents the files created inside this package.
+
+### Project Directory Tree
+
+```text
+.
+├── backend/                             # Python / FastAPI Server App
+│   ├── requirements.txt                 # Project dependencies
+│   ├── run.py                           # Application execution entrypoint
+│   └── app/                             # Core application package
+│       ├── main.py                      # FastAPI App initialization & routing setup
+│       ├── routers/                     # Endpoint groups separated by features
+│       │   ├── __init__.py
+│       │   ├── map.py                   # Map data logic and endpoints (/api/map-data)
+│       │   └── weather.py               # Weather logic and endpoints (/api/weather)
+│       └── services/                    # Reusable computational layers & API fetchers
+│
+└── frontend/                            # Cloned 'jamesnatoli.github.io' Git Repo
+    ├── index.html                       # Global Homepage / Landing Hub
+    ├── styles.css                       # Global styles
+    ├── map-project/                     # Modular Map Application View
+    │   ├── index.html
+    │   └── map.js                       # Fetches data from: ...ts.net/api/map-data
+    └── weather-dashboard/               # Modular Weather Dashboard View
+        ├── index.html
+        └── dashboard.js                 # Fetches data from: ...ts.net/api/weather
+```
+
+---
+
+### 1. Entrypoint Router Setup (`backend/app/main.py`)
+
+```python
+from fastapi import FastAPI
+from app.routers import map, weather
+
+app = FastAPI(title="Scalable Pi Backend")
+
+# Register APIRouters dynamically under unified namespace
+app.include_router(map.router)
+app.include_router(weather.router)
+
+@app.get("/")
+def root():
+    return {"status": "healthy"}
+```
+
+---
+
+### 2. Modular Map APIRouter Feature (`backend/app/routers/map.py`)
+
+```python
+from fastapi import APIRouter
+
+router = APIRouter(prefix="/api", tags=["map"])
+
+@router.get("/map-data")
+def get_map_data():
+    # Write dynamic query logic, database operations or sensor calls here safely.
+    return [
+        {
+            "name": "Pi Server Location",
+            "lat": 38.98,
+            "lng": -94.67,
+            "description": "FastAPI running on the Pi!"
+        }
+    ]
+```
+
+---
+
+### 3. Execution Script (`backend/run.py`)
+
+```python
+import uvicorn
+
+if __name__ == '__main__':
+    # Binds server directly to internal port 5000 matching your Caddyfile reverse proxy
+    uvicorn.run("app.main:app", host="127.0.0.1", port=5000, reload=True)
+```

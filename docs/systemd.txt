@@ -1,0 +1,64 @@
+
+# Step 1: Create the Systemd Service File
+
+Open a new service file inside the system directory:
+
+`sudo emacs /etc/systemd/system/fastapi-backend.service`
+
+```
+[Unit]
+Description=FastAPI Modular Backend Application Engine
+After=network.target
+
+[Service]
+# Run the service under your standard user account
+User=jamesnatoli
+Group=jamesnatoli
+
+# The absolute directory path where your project files live
+WorkingDirectory=/home/jamesnatoli/Documents/Programs/map-backend
+
+# Runs the uvicorn server directly out of your isolated python virtual environment
+ExecStart=/home/jamesnatoli/Documents/Programs/map-backend/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 5000
+
+# Automated reliability and error handling rules
+Restart=always
+RestartSec=5
+
+# Directs standard error logs to the system journal logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fastapi-backend
+
+[Install]
+WantedBy=multi-user.target
+```
+
+# Step 2: Register, Enable, and Launch the Service
+
+Now tell systemd to scan the directory for the new service file, enable it to launch on boot, and spin it up right now.
+
+```
+# 1. Reload the system daemon to discover the new .service file
+sudo systemctl daemon-reload
+
+# 2. Enable the service so it boots automatically when the Pi turns on
+sudo systemctl enable fastapi-backend.service
+
+# 3. Start the application engine right now in the background
+sudo systemctl start fastapi-backend.service
+```
+
+# Step 3: Verify the Operational Status
+
+You can monitor the live execution, uptime, and memory tracking of your background process at any time by running:
+```
+sudo systemctl status fastapi-backend.service
+```
+
+Your terminal should show a bright green active (running) status indicator, along with confirmation from Uvicorn that it is successfully listening locally on port 5000.
+
+Useful Commands for Maintenance going forward:
+- Restarting after code changes: `sudo systemctl restart fastapi-backend`
+- Stopping the backend: `sudo systemctl stop fastapi-backend`
+- Viewing live execution logs: `journalctl -u fastapi-backend.service -f`
